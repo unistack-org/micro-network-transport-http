@@ -1,6 +1,7 @@
 package http
 
 import (
+	"context"
 	"sync"
 	"testing"
 
@@ -10,10 +11,11 @@ import (
 func call(b *testing.B, c int) {
 	b.StopTimer()
 
+	ctx := context.Background()
 	tr := NewTransport()
 
 	// server listen
-	l, err := tr.Listen("localhost:0")
+	l, err := tr.Listen(ctx, "localhost:0")
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -56,7 +58,7 @@ func call(b *testing.B, c int) {
 	}
 
 	// client connection
-	client, err := tr.Dial(l.Addr())
+	client, err := tr.Dial(ctx, l.Addr())
 	if err != nil {
 		b.Fatalf("Unexpected dial err: %v", err)
 	}
@@ -88,7 +90,7 @@ func call(b *testing.B, c int) {
 
 	for i := 0; i < c; i++ {
 		go func() {
-			cl, err := tr.Dial(l.Addr())
+			cl, err := tr.Dial(ctx, l.Addr())
 			if err != nil {
 				b.Fatalf("Unexpected dial err: %v", err)
 			}

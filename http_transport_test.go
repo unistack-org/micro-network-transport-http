@@ -1,6 +1,7 @@
 package http
 
 import (
+	"context"
 	"io"
 	"net"
 	"testing"
@@ -23,20 +24,20 @@ func expectedPort(t *testing.T, expected string, lsn transport.Listener) {
 
 func TestHTTPTransportPortRange(t *testing.T) {
 	tp := NewTransport()
-
-	lsn1, err := tp.Listen(":44444-44448")
+	ctx := context.Background()
+	lsn1, err := tp.Listen(ctx, ":44444-44448")
 	if err != nil {
 		t.Errorf("Did not expect an error, got %s", err)
 	}
 	expectedPort(t, "44444", lsn1)
 
-	lsn2, err := tp.Listen(":44444-44448")
+	lsn2, err := tp.Listen(ctx, ":44444-44448")
 	if err != nil {
 		t.Errorf("Did not expect an error, got %s", err)
 	}
 	expectedPort(t, "44445", lsn2)
 
-	lsn, err := tp.Listen("127.0.0.1:0")
+	lsn, err := tp.Listen(ctx, "127.0.0.1:0")
 	if err != nil {
 		t.Errorf("Did not expect an error, got %s", err)
 	}
@@ -48,8 +49,8 @@ func TestHTTPTransportPortRange(t *testing.T) {
 
 func TestHTTPTransportCommunication(t *testing.T) {
 	tr := NewTransport()
-
-	l, err := tr.Listen("127.0.0.1:0")
+	ctx := context.Background()
+	l, err := tr.Listen(ctx, "127.0.0.1:0")
 	if err != nil {
 		t.Errorf("Unexpected listen err: %v", err)
 	}
@@ -82,7 +83,7 @@ func TestHTTPTransportCommunication(t *testing.T) {
 		}
 	}()
 
-	c, err := tr.Dial(l.Addr())
+	c, err := tr.Dial(ctx, l.Addr())
 	if err != nil {
 		t.Errorf("Unexpected dial err: %v", err)
 	}
@@ -114,8 +115,9 @@ func TestHTTPTransportCommunication(t *testing.T) {
 
 func TestHTTPTransportError(t *testing.T) {
 	tr := NewTransport()
+	ctx := context.Background()
 
-	l, err := tr.Listen("127.0.0.1:0")
+	l, err := tr.Listen(ctx, "127.0.0.1:0")
 	if err != nil {
 		t.Errorf("Unexpected listen err: %v", err)
 	}
@@ -151,7 +153,7 @@ func TestHTTPTransportError(t *testing.T) {
 		}
 	}()
 
-	c, err := tr.Dial(l.Addr())
+	c, err := tr.Dial(ctx, l.Addr())
 	if err != nil {
 		t.Errorf("Unexpected dial err: %v", err)
 	}
@@ -184,8 +186,8 @@ func TestHTTPTransportError(t *testing.T) {
 
 func TestHTTPTransportTimeout(t *testing.T) {
 	tr := NewTransport(transport.Timeout(time.Millisecond * 100))
-
-	l, err := tr.Listen("127.0.0.1:0")
+	ctx := context.Background()
+	l, err := tr.Listen(ctx, "127.0.0.1:0")
 	if err != nil {
 		t.Errorf("Unexpected listen err: %v", err)
 	}
@@ -227,7 +229,7 @@ func TestHTTPTransportTimeout(t *testing.T) {
 		}
 	}()
 
-	c, err := tr.Dial(l.Addr())
+	c, err := tr.Dial(ctx, l.Addr())
 	if err != nil {
 		t.Errorf("Unexpected dial err: %v", err)
 	}

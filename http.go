@@ -3,9 +3,9 @@ package http
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"crypto/tls"
 	"errors"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"net"
@@ -476,20 +476,14 @@ func (h *httpTransportListener) Accept(fn func(transport.Socket)) error {
 	return srv.Serve(h.listener)
 }
 
-func (h *httpTransport) Dial(addr string, opts ...transport.DialOption) (transport.Client, error) {
-	dopts := transport.DialOptions{
-		Timeout: transport.DefaultDialTimeout,
-	}
-
-	for _, opt := range opts {
-		opt(&dopts)
-	}
-
+func (h *httpTransport) Dial(ctx context.Context, addr string, opts ...transport.DialOption) (transport.Client, error) {
 	var conn net.Conn
 	var err error
 
+	dopts := transport.NewDialOptions(opts...)
+
 	// TODO: support dial option here rather than using internal config
-	if h.opts.Secure || h.opts.TLSConfig != nil {
+	if h.opts.TLSConfig != nil {
 		config := h.opts.TLSConfig
 		if config == nil {
 			config = &tls.Config{
@@ -502,7 +496,7 @@ func (h *httpTransport) Dial(addr string, opts ...transport.DialOption) (transpo
 		})(addr)
 	} else {
 		conn, err = newConn(func(addr string) (net.Conn, error) {
-			return net.DialTimeout("tcp", addr, dopts.Timeout)
+			return (&net.Dialer{Timeout: dopts.Timeout}).DialContext(ctx, "tcp", addr)
 		})(addr)
 	}
 
@@ -522,19 +516,15 @@ func (h *httpTransport) Dial(addr string, opts ...transport.DialOption) (transpo
 	}, nil
 }
 
-func (h *httpTransport) Listen(addr string, opts ...transport.ListenOption) (transport.Listener, error) {
-	var options transport.ListenOptions
-	for _, o := range opts {
-		o(&options)
-	}
-
+func (h *httpTransport) Listen(ctx context.Context, addr string, opts ...transport.ListenOption) (transport.Listener, error) {
 	var l net.Listener
 	var err error
 
+	options := transport.NewListenOptions(opts...)
+	_ = options
+
 	// TODO: support use of listen options
-	if h.opts.Secure && h.opts.TLSConfig == nil {
-		return nil, fmt.Errorf("request secure communication, but *tls.Config is nil")
-	} else if h.opts.Secure && h.opts.TLSConfig != nil {
+	if h.opts.TLSConfig != nil {
 		fn := func(addr string) (net.Listener, error) {
 			return tls.Listen("tcp", addr, h.opts.TLSConfig)
 		}
@@ -573,10 +563,10 @@ func (h *httpTransport) String() string {
 	return "http"
 }
 
+func (h *httpTransport) Name() string {
+	return h.opts.Name
+}
+
 func NewTransport(opts ...transport.Option) transport.Transport {
-	var options transport.Options
-	for _, o := range opts {
-		o(&options)
-	}
-	return &httpTransport{opts: options}
+	return &httpTransport{opts: transport.NewOptions(opts...)}
 }
