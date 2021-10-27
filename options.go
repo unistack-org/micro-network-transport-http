@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/unistack-org/micro/v3/network/transport"
+	"go.unistack.org/micro/v3/network/transport"
 )
 
 // Handle registers the handler for the given pattern.

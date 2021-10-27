@@ -1,8 +1,8 @@
-module github.com/unistack-org/micro-network-transport-http/v3
+module go.unistack.org/micro-network-transport-http/v3
 
-go 1.15
+go 1.16
 
 require (
-	github.com/unistack-org/micro/v3 v3.7.4
-	golang.org/x/net v0.0.0-20210510120150-4163338589ed
+	go.unistack.org/micro/v3 v3.8.7
+	golang.org/x/net v0.0.0-20211020060615-d418f374d309
 )

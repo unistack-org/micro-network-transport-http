@@ -1,4 +1,4 @@
-package http
+package http // import "go.unistack.org/micro-network-transport-http/v3"
 
 import (
 	"bufio"
@@ -14,9 +14,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/unistack-org/micro/v3/network/transport"
-	"github.com/unistack-org/micro/v3/util/buf"
-	mnet "github.com/unistack-org/micro/v3/util/net"
+	"go.unistack.org/micro/v3/network/transport"
+	"go.unistack.org/micro/v3/util/buf"
+	mnet "go.unistack.org/micro/v3/util/net"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
 )
